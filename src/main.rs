@@ -1,22 +1,30 @@
-use clap::Parser;
+use clap::{Parser, Subcommand};
 
-/// Simple program to greet a person
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    /// Name of the person to greet
-    #[arg(short, long)]
-    name: String,
-
-    /// Number of times to greet
-    #[arg(short, long, default_value_t = 1)]
-    count: u8,
+#[derive(Parser)]
+#[command(
+    name = "KVStore", 
+    version = "0.1.0", 
+    about = "KV Store", 
+    long_about = None
+    )]
+struct Kv {
+    #[command(subcommand)]
+    command: Commands,
 }
 
-fn main() {
-    let args = Args::parse();
-
-    for _ in 0..args.count {
-        println!("Hello {}!", args.name);
+#[derive(Subcommand)]
+enum Commands {
+    set,
+    get,
+    delete,
+}
+    
+fn main () {
+    let kv = Kv::parse();
+    match kv.command {
+        Commands::set => {},
+        Commands::get => {},
+        Commands::delete => {},
     }
+
 }
