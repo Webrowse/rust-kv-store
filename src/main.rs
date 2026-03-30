@@ -14,17 +14,24 @@ struct Kv {
 
 #[derive(Subcommand)]
 enum Commands {
-    set,
-    get,
-    delete,
+    Set {
+        key: String,
+        value: String,
+    },
+    Get {
+        key: String,
+    },
+    Delete{
+        key: String,
+    },
 }
     
 fn main () {
     let kv = Kv::parse();
     match kv.command {
-        Commands::set => {},
-        Commands::get => {},
-        Commands::delete => {},
+        Commands::Set { key, value } => println!("Set: {} = {}", key, value),
+        Commands::Get { key } => println!("Get: {}", key),
+        Commands::Delete { key } => println!("Delete: {}", key),
     }
 
 }
