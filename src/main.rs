@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -12,7 +14,7 @@ struct Kv {
     command: Commands,
 }
 
-#[derive(Subcommand)]
+#[derive(Subcommand, Debug)]
 enum Commands {
     Set {
         key: String,
@@ -28,10 +30,23 @@ enum Commands {
     
 fn main () {
     let kv = Kv::parse();
-    match kv.command {
-        Commands::Set { key, value } => println!("Set: {} = {}", key, value),
-        Commands::Get { key } => println!("Get: {}", key),
-        Commands::Delete { key } => println!("Delete: {}", key),
-    }
+    let mut store: HashMap<String, String> = HashMap::new();
 
+    match kv.command {
+        Commands::Set { key, value } => {
+            store.insert(key.clone(), value.clone());
+            println!("Set: {} = {}", key, value)
+        },
+        Commands::Get { key } => {
+            match store.get(&key) {
+                Some(value) => println!("for key: {}, value : {}", key, value),
+                None => println!("The value for key : {}, is not found", key),
+            }
+        },
+        Commands::Delete { key } => {
+            store.remove(&key);
+            println!("Deleted : {}", key);
+
+        }
+    }
 }
