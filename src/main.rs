@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use clap::{Parser, Subcommand};
+use serde::{Serialize, Deserialize};
 
 #[derive(Parser)]
 #[command(
@@ -14,7 +15,7 @@ struct Kv {
     command: Commands,
 }
 
-#[derive(Subcommand, Debug)]
+#[derive(Subcommand, Debug, Serialize, Deserialize)]
 enum Commands {
     Set {
         key: String,
