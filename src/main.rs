@@ -1,9 +1,9 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fs, path::Path};
 
 use clap::{Parser, Subcommand};
 use serde::{Serialize, Deserialize};
 
-#[derive(Parser)]
+#[derive(Parser, Debug)]
 #[command(
     name = "KVStore", 
     version = "0.1.0", 
@@ -15,7 +15,7 @@ struct Kv {
     command: Commands,
 }
 
-#[derive(Subcommand, Debug, Serialize, Deserialize)]
+#[derive(Subcommand, Debug)]
 enum Commands {
     Set {
         key: String,
@@ -31,12 +31,20 @@ enum Commands {
     
 fn main () {
     let kv = Kv::parse();
-    let mut store: HashMap<String, String> = HashMap::new();
+    let mut store: HashMap<String, String> = if Path::new("store.json").exists() {
+        let contents = fs::read_to_string("store.json").unwrap_or_default();
+        serde_json::from_str(&contents).unwrap()
+        
+    } else {
+        HashMap::new()
+    };
 
     match kv.command {
         Commands::Set { key, value } => {
             store.insert(key.clone(), value.clone());
-            println!("Set: {} = {}", key, value)
+            println!("Set: {} = {}", key, value);
+
+
         },
         Commands::Get { key } => {
             match store.get(&key) {
