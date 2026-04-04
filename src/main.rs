@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fs, path::Path};
 
 use clap::{Parser, Subcommand};
-use serde::{Serialize, Deserialize};
+use serde_json;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -58,4 +58,6 @@ fn main () {
 
         }
     }
+    let json = serde_json::to_string(&store).unwrap_or_default();
+    fs::write("store.json", json).unwrap();
 }
