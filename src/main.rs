@@ -1,7 +1,9 @@
 use std::{collections::HashMap, fs, path::Path};
+use std::fs::OpenOptions;
+use std::io::Write;
+
 
 use clap::{Parser, Subcommand};
-use serde_json;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -31,19 +33,46 @@ enum Commands {
     
 fn main () {
     let kv = Kv::parse();
-    let mut store: HashMap<String, String> = if Path::new("store.json").exists() {
-        let contents = fs::read_to_string("store.json").unwrap_or_default();
-        serde_json::from_str(&contents).unwrap()
-        
-    } else {
-        HashMap::new()
-    };
+    let mut store : HashMap<String, String> = HashMap::new();
+    if Path::new("log.db").exists() {
+        let content = fs::read_to_string("log.db").unwrap_or_default();
+
+        for line in content.lines() {
+            let parts = line.split_whitespace().collect::<Vec<&str>>();
+            if parts.is_empty(){
+                continue;
+            }
+
+            match parts[0] {
+                "SET" => {
+                    if parts.len() >= 3 {
+                        let key = parts[1].to_string();
+                        let value = parts[2..].join(" ");
+                        store.insert(key, value);
+                    }
+                },
+                
+                "DEL" => {
+                    if parts.len() == 2 {
+                        let key = parts[1];
+                        store.remove(key);
+                    }
+                }
+
+                _ => {},
+            }
+        }
+    }
+            let mut file = OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open("log.db")
+                .unwrap();
 
     match kv.command {
         Commands::Set { key, value } => {
             store.insert(key.clone(), value.clone());
-            println!("Set: {} = {}", key, value);
-
+            writeln!(file, "SET {} {}",key, value).unwrap();
 
         },
         Commands::Get { key } => {
@@ -54,10 +83,7 @@ fn main () {
         },
         Commands::Delete { key } => {
             store.remove(&key);
-            println!("Deleted : {}", key);
-
+            writeln!(file, "DEL {}", key).unwrap();
         }
     }
-    let json = serde_json::to_string(&store).unwrap_or_default();
-    fs::write("store.json", json).unwrap();
 }
