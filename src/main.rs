@@ -1,7 +1,6 @@
-use std::{collections::HashMap, fs, path::Path};
 use std::fs::OpenOptions;
 use std::io::Write;
-
+use std::{collections::HashMap, fs, path::Path};
 
 use clap::{Parser, Subcommand};
 
@@ -19,27 +18,20 @@ struct Kv {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
-    Set {
-        key: String,
-        value: String,
-    },
-    Get {
-        key: String,
-    },
-    Delete{
-        key: String,
-    },
+    Set { key: String, value: String },
+    Get { key: String },
+    Delete { key: String },
 }
-    
-fn main () {
+
+fn main() {
     let kv = Kv::parse();
-    let mut store : HashMap<String, String> = HashMap::new();
+    let mut store: HashMap<String, String> = HashMap::new();
     if Path::new("log.db").exists() {
         let content = fs::read_to_string("log.db").unwrap_or_default();
 
         for line in content.lines() {
             let parts = line.split_whitespace().collect::<Vec<&str>>();
-            if parts.is_empty(){
+            if parts.is_empty() {
                 continue;
             }
 
@@ -50,8 +42,8 @@ fn main () {
                         let value = parts[2..].join(" ");
                         store.insert(key, value);
                     }
-                },
-                
+                }
+
                 "DEL" => {
                     if parts.len() == 2 {
                         let key = parts[1];
@@ -59,27 +51,24 @@ fn main () {
                     }
                 }
 
-                _ => {},
+                _ => {}
             }
         }
     }
-            let mut file = OpenOptions::new()
-                .create(true)
-                .append(true)
-                .open("log.db")
-                .unwrap();
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open("log.db")
+        .unwrap();
 
     match kv.command {
         Commands::Set { key, value } => {
             store.insert(key.clone(), value.clone());
-            writeln!(file, "SET {} {}",key, value).unwrap();
-
-        },
-        Commands::Get { key } => {
-            match store.get(&key) {
-                Some(value) => println!("for key: {}, value : {}", key, value),
-                None => println!("The value for key : {}, is not found", key),
-            }
+            writeln!(file, "SET {} {}", key, value).unwrap();
+        }
+        Commands::Get { key } => match store.get(&key) {
+            Some(value) => println!("for key: {}, value : {}", key, value),
+            None => println!("The value for key : {}, is not found", key),
         },
         Commands::Delete { key } => {
             store.remove(&key);
