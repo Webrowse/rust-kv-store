@@ -59,12 +59,12 @@ fn main() {
         .create(true)
         .append(true)
         .open("log.db")
-        .unwrap();
+        .expect("failed to open log.db");
 
     match kv.command {
         Commands::Set { key, value } => {
-            store.insert(key.clone(), value.clone());
             writeln!(file, "SET {} {}", key, value).unwrap();
+            store.insert(key, value);
         }
         Commands::Get { key } => match store.get(&key) {
             Some(value) => println!("for key: {}, value : {}", key, value),
