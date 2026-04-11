@@ -21,6 +21,7 @@ enum Commands {
     Set { key: String, value: String },
     Get { key: String },
     Delete { key: String },
+    Compact,
 }
 
 fn main() {
@@ -73,6 +74,19 @@ fn main() {
         Commands::Delete { key } => {
             store.remove(&key);
             writeln!(file, "DEL {}", key).unwrap();
-        }
+        },
+        Commands::Compact => {
+            let mut file = OpenOptions::new()
+                .create(true)
+                .write(true)
+                .truncate(true)
+                .open("log.db")
+                .expect("failed to compact log.db");
+
+            for (key, value) in &store {
+                writeln!(file, "SET {} {}", key, value).expect("write failed");
+            }
+            println!("logs compacted");
+    }
     }
 }
