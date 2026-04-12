@@ -56,14 +56,14 @@ fn main() {
             }
         }
     }
-    let mut file = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open("log.db")
-        .expect("failed to open log.db");
 
     match kv.command {
         Commands::Set { key, value } => {
+            let mut file = OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open("log.db")
+                .expect("failed to open log.db");
             writeln!(file, "SET {} {}", key, value).unwrap();
             store.insert(key, value);
         }
@@ -72,9 +72,14 @@ fn main() {
             None => println!("The value for key : {}, is not found", key),
         },
         Commands::Delete { key } => {
+            let mut file = OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open("log.db")
+                .expect("failed to open log.db");
             store.remove(&key);
             writeln!(file, "DEL {}", key).unwrap();
-        },
+        }
         Commands::Compact => {
             let mut file = OpenOptions::new()
                 .create(true)
@@ -87,6 +92,6 @@ fn main() {
                 writeln!(file, "SET {} {}", key, value).expect("write failed");
             }
             println!("logs compacted");
-    }
+        }
     }
 }
