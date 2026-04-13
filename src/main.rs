@@ -64,8 +64,9 @@ fn main() {
                 .append(true)
                 .open("log.db")
                 .expect("failed to open log.db");
-            writeln!(file, "SET {} {}", key, value).unwrap();
+            writeln!(file, "SET {} {}", key, value).expect("write failed");
             store.insert(key, value);
+            file.flush().expect("flush failed");
         }
         Commands::Get { key } => match store.get(&key) {
             Some(value) => println!("for key: {}, value : {}", key, value),
@@ -78,7 +79,8 @@ fn main() {
                 .open("log.db")
                 .expect("failed to open log.db");
             store.remove(&key);
-            writeln!(file, "DEL {}", key).unwrap();
+            writeln!(file, "DEL {}", key).expect("write failed");
+            file.flush().expect("flush failed");
         }
         Commands::Compact => {
             let mut file = OpenOptions::new()
@@ -92,6 +94,7 @@ fn main() {
                 writeln!(file, "SET {} {}", key, value).expect("write failed");
             }
             println!("logs compacted");
+            file.flush().expect("flush failed");
         }
     }
 }
