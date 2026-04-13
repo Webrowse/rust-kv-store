@@ -1,6 +1,7 @@
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::{collections::HashMap, fs, path::Path};
+use std::time::Instant;
 
 use clap::{Parser, Subcommand};
 
@@ -27,6 +28,7 @@ enum Commands {
 fn main() {
     let kv = Kv::parse();
     let mut store: HashMap<String, String> = HashMap::new();
+    let start = Instant::now();
     if Path::new("log.db").exists() {
         let content = fs::read_to_string("log.db").unwrap_or_default();
 
@@ -56,6 +58,7 @@ fn main() {
             }
         }
     }
+    println!("Total time taken for HashMap: {:?}", start.elapsed());
 
     match kv.command {
         Commands::Set { key, value } => {
@@ -66,7 +69,7 @@ fn main() {
                 .expect("failed to open log.db");
             writeln!(file, "SET {} {}", key, value).expect("write failed");
             store.insert(key, value);
-            file.flush().expect("flush failed");
+            file.sync_all().expect("flush failed");
         }
         Commands::Get { key } => match store.get(&key) {
             Some(value) => println!("for key: {}, value : {}", key, value),
@@ -80,7 +83,7 @@ fn main() {
                 .expect("failed to open log.db");
             store.remove(&key);
             writeln!(file, "DEL {}", key).expect("write failed");
-            file.flush().expect("flush failed");
+            file.sync_all().expect("flush failed");
         }
         Commands::Compact => {
             let mut file = OpenOptions::new()
@@ -94,7 +97,7 @@ fn main() {
                 writeln!(file, "SET {} {}", key, value).expect("write failed");
             }
             println!("logs compacted");
-            file.flush().expect("flush failed");
+            file.sync_all().expect("flush failed");
         }
     }
 }
