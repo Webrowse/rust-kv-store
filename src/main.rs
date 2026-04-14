@@ -100,4 +100,5 @@ fn main() {
             file.sync_all().expect("flush failed");
         }
     }
+    println!("Total time taken for whole program: {:?}", start.elapsed());
 }
