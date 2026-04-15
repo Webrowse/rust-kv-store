@@ -1,7 +1,9 @@
 use std::fs::OpenOptions;
 use std::io::Write;
-use std::{collections::HashMap, fs, path::Path};
+use std::{collections::HashMap, path::Path};
 use std::time::Instant;
+use std::io::{BufRead, BufReader};
+use std::fs::File;
 
 use clap::{Parser, Subcommand};
 
@@ -30,9 +32,12 @@ fn main() {
     let mut store: HashMap<String, String> = HashMap::new();
     let start = Instant::now();
     if Path::new("log.db").exists() {
-        let content = fs::read_to_string("log.db").unwrap_or_default();
+        //let content = fs::read_to_string("log.db").unwrap_or_default();
+        let file = File::open("log.db").unwrap();
+        let reader = BufReader::new(file);
 
-        for line in content.lines() {
+        for line in reader.lines() {
+            let line = line.unwrap();
             let parts = line.split_whitespace().collect::<Vec<&str>>();
             if parts.is_empty() {
                 continue;
