@@ -30,13 +30,14 @@ enum Commands {
 fn main() {
     let kv = Kv::parse();
     let mut store: HashMap<String, String> = HashMap::new();
+    let mut ops = 0;
     let start = Instant::now();
     if Path::new("log.db").exists() {
-        //let content = fs::read_to_string("log.db").unwrap_or_default();
         let file = File::open("log.db").unwrap();
         let reader = BufReader::new(file);
 
         for line in reader.lines() {
+            ops += 1;
             let line = line.unwrap();
             let parts = line.split_whitespace().collect::<Vec<&str>>();
             if parts.is_empty() {
@@ -64,6 +65,7 @@ fn main() {
         }
     }
     println!("Total time taken for HashMap: {:?}", start.elapsed());
+    println!("Total number of operations: {}", ops);
 
     match kv.command {
         Commands::Set { key, value } => {
@@ -77,8 +79,8 @@ fn main() {
             file.sync_all().expect("flush failed");
         }
         Commands::Get { key } => match store.get(&key) {
-            Some(value) => println!("for key: {}, value : {}", key, value),
-            None => println!("The value for key : {}, is not found", key),
+            Some(value) => println!(r#""{}" = "{}""#, key, value),
+            None => println!(r#""{}" is not found"#, key),
         },
         Commands::Delete { key } => {
             let mut file = OpenOptions::new()
