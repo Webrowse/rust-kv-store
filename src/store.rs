@@ -3,8 +3,9 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 
-pub fn load_store() -> HashMap<String, String> {
+pub fn load_store() -> (HashMap<String, String>, usize){
     let mut store = HashMap::new();
+    let mut ops = 0;
 
     if Path::new("log.db").exists() {
         let file = File::open("log.db").expect("Fail to open file");
@@ -18,6 +19,7 @@ pub fn load_store() -> HashMap<String, String> {
                 continue;
             }
 
+            ops += 1;
             match parts[0] {
                 "SET" => {
                     if parts.len() >= 3 {
@@ -35,5 +37,5 @@ pub fn load_store() -> HashMap<String, String> {
             }
         }
     }
-    store
+    (store, ops)
 }
